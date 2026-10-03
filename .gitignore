@@ -1,35 +1,34 @@
-# ---------------------------------------------------------------------------
-# Source material — NEVER commit.
-# Contains the full text and all 284 figures of a commercially sold book.
-# This skill is a reimplementation of the book's principles, not a copy of it.
-# ---------------------------------------------------------------------------
-source/
+# Copyrighted source material and local research notes
+/source/
 *.pdf
+/PLAN.md
+/NOTE.md
 
-# Personal working documents — not part of the deliverable
-PLAN.md
-NOTE.md
-
-# Python
+# Python environments and caches
 __pycache__/
 *.py[cod]
 *.egg-info/
 .venv/
 venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
 
-# Generated token output
-design/
+# Local credentials and generated design output
+.env
+.env.*
+!.env.example
+/design/
 *.tokens.json
-!.agents/skills/refactoring-ui/assets/tokens.template.json
 
-# Eval run artifacts — keep the folder, not the reports
-eval/runs/**
-!eval/runs/README.md
+# Evaluation reports; retain instructions in the directory
+/eval/runs/**
+!/eval/runs/README.md
 
-# OS / editor
+# OS and editor-local files
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
 *.swp
-
