@@ -21,7 +21,7 @@ python3 eval/score.py --self-check
 
 判断标准（二选一即算触发）：
 
-- 读了 `skills/refactoring-ui/SKILL.md`（或已安装的同名 Skill）
+- 读了 `.agents/skills/refactoring-ui/SKILL.md`（或已安装的同名 Skill）
 - 明确按本 Skill 的路由 / 铁律 / Workflow 在走
 
 只是「凭常识评了两句 UI」、没加载本 Skill → 算 **未触发**。

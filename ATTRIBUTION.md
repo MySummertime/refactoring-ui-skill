@@ -1,8 +1,10 @@
 # Attribution
 
-## The source
+## Project lineage
 
-Every design principle encoded in this skill originates in:
+This repository is adapted from [Edison Li's refactoring-ui-skill](https://github.com/edisonmbli/refactoring-ui-skill), distributed under the MIT License. The original copyright notice remains in [LICENSE](LICENSE). This fork reorganizes the skill for broader agent compatibility and is maintained by [MySummertime](https://github.com/MySummertime).
+
+The design principles encoded in the skill originate in:
 
 > **Refactoring UI** — Adam Wathan & Steve Schoger
 > <https://www.refactoringui.com>
@@ -13,7 +15,7 @@ learn properly from the source.
 
 ## What this project is, and is not
 
-**This is an unofficial, independent project.** It is not affiliated with, endorsed
+**This is an unofficial adaptation.** It is not affiliated with, endorsed
 by, sponsored by, or reviewed by Adam Wathan, Steve Schoger, or Tailwind Labs.
 
 **What it contains:** design rules restated in our own words as executable

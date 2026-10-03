@@ -1,153 +1,65 @@
-# Refactoring UI: a portable Agent Skill
+# Refactoring UI Skill
 
-A Web-UI design rulebook an AI coding agent can actually execute, plus a diagnostic layer on top. Extracted from [*Refactoring UI*](https://www.refactoringui.com) by Adam Wathan & Steve Schoger.
+[中文说明](README.md)
 
-> ⚠️ **Unofficial and independent.** Not affiliated with, endorsed by, or reviewed by the book's authors.
+This repository provides a web interface design skill for coding agents. It packages design checks as focused references, examples, and scripts so an agent can make better grounded suggestions while building, refining, or reviewing a page.
 
-> It is no substitute for the book itself, [read the original if it interests you](https://www.refactoringui.com) — it's genuinely good.
+## Origin and credit
 
-> See [ATTRIBUTION.md](ATTRIBUTION.md) for details.
+This repository is adapted from [Edison Li's refactoring-ui-skill](https://github.com/edisonmbli/refactoring-ui-skill). The original project is MIT licensed. Its copyright notice remains in [LICENSE](LICENSE). This version reorganizes the skill for use across tools and updates the installation guidance. It is maintained by [MySummertime](https://github.com/MySummertime).
 
-**[中文文档 →](README.md)**
+The underlying design principles come from [*Refactoring UI*](https://www.refactoringui.com/) by Adam Wathan and Steve Schoger. This is an unofficial adaptation, unaffiliated with the book's authors or the original project maintainer. The book is the best place to learn the material in depth. See [ATTRIBUTION.md](ATTRIBUTION.md) for more about sources and scope.
 
----
+## What it helps with
 
-## Contents
+- **Build a page:** Plan content hierarchy, layout, typography, and component states before styling.
+- **Refine an existing interface:** Find inconsistent spacing, weak contrast, and unclear visual priorities within the project's current design system.
+- **Review a design:** Rank findings by severity and connect each recommendation to a numbered rule.
+- **Create design tokens:** Establish a basic palette and token set when the project has none, including text contrast checks.
+- **Explain a choice:** Retrieve the reasoning and limits behind a particular design principle.
 
-- [The problem](#the-problem)
-- [What this is](#what-this-is)
-- [What it looks like](#what-it-looks-like)
-- [Install](#install)
-- [What else it does](#what-else-it-does)
-- [A few things worth knowing upfront](#a-few-things-worth-knowing-upfront)
-- [How it works](#how-it-works)
-- [License](#license)
-
-## The problem
-
-AI writes competent HTML and CSS, and the interface still comes out slightly wrong. Nothing errors out, but something feels off.
-
-Everything centered. One spacing value from top to bottom. The primary color always leaning indigo or purple. Every action rendered as a filled button. No empty state.
-
-None of these look like much on their own. The trouble is that **generation is local, while design has to be judged globally.**
-
-What's missing in between is a rulebook.
-
-## What this is
-
-Most AI design tooling generates: describe an interface, receive one.
-
-This Skill does the opposite job. It's the constraint layer and the diagnostic layer — the rulebook and the reviewer, not the stylist.
-
-Which makes it complementary to those generators rather than competing with them: **hand it the constraints before generation, hand it the output for a walkthrough afterward.**
-
-Refactoring UI is a rules book, not an inspiration book. Nearly every page is *symptom → mechanism → specific fix → concrete number*, and its author also wrote Tailwind CSS, so almost nothing is lost between principle and code: the book's type scale, spacing scale and color ramps are Tailwind's defaults. This project turns the whole book into executable rules — **151 of them**, each one traceable.
-
-## What it looks like
-
-> *"Have a look at this settings page — something feels off but I can't tell what."*
-
-It detects your stack, renders the page at desktop and mobile widths, then works through seven lenses in a fixed order: **hierarchy → spacing → typography → color → depth → images → finishing**.
-
-The order is causal. Until hierarchy is sorted out, what counts as a spacing problem keeps shifting; and once spacing is fixed, the question "does this need a border" often disappears on its own.
-
-Every finding it returns is severity-ranked and must cite a rule:
-
-| Sev | Rule | Now | Proposed |
-| --- | ---- | --- | -------- |
-| P0 | §3.6 | Label spacing equals group spacing — each label sits as far from its own input as from the next group | `mb-1` inside, `mb-6` between |
-| P1 | §2.8 | Three buttons all styled as the primary action | Keep one primary; outline and link for the rest |
-| P1 | §6.2 | `shadow-lg` on static cards | Use `shadow-sm`. A shadow expresses elevation, not importance |
-
-There's also a **Systemic** section that looks at the whole rather than the parts — for example, "this project has no spacing scale."
+The skill inspects the project's stack and existing tokens before suggesting changes. It works with plain CSS, Tailwind, and common component libraries without replacing the project's established conventions. When a page preview is available, review the rendered result; when only source code is available, identify visual findings as unverified.
 
 ## Install
 
-The canonical skill is [`skills/refactoring-ui/`](skills/refactoring-ui/). Copy that entire directory into a skill location supported by your coding assistant. The skill name stays `refactoring-ui` in every environment.
+The sole skill directory is [`.agents/skills/refactoring-ui/`](.agents/skills/refactoring-ui/). Codex and VS Code agents with project Agent Skills support can discover it when this repository is open.
 
-For a repository using Codex or an agent in VS Code that discovers Agent Skills:
+To use it in another project, run these commands **from the target project's root**:
 
 ```bash
-git clone https://github.com/edisonmbli/refactoring-ui-skill.git
+skill_checkout=$(mktemp -d)
+git clone --depth 1 git@github.com:MySummertime/refactoring-ui-skill.git "$skill_checkout/repo"
 mkdir -p .agents/skills
-cp -R refactoring-ui-skill/skills/refactoring-ui .agents/skills/
+cp -R "$skill_checkout/repo/.agents/skills/refactoring-ui" .agents/skills/
+rm -rf "$skill_checkout"
 ```
 
-For a personal installation, copy it to `~/.agents/skills/` instead. VS Code also supports `.github/skills/` and `.claude/skills/` in a project. For Claude Code, `.claude/skills/` is the conventional project location; its plugin marketplace installation remains available:
+If the repository is already checked out elsewhere, adjust the source path in the last command. For a personal installation, copy the skill to `~/.agents/skills/`. Other Agent Skills hosts may use another supported directory; Claude Code, for example, uses a project's `.claude/skills/`. Keep one copy within a given scope to avoid duplicate discovery. If your agent does not discover skills automatically, adapt [`templates/AGENTS.md`](templates/AGENTS.md) to point to the installed `SKILL.md`.
 
-```text
-/plugin marketplace add edisonmbli/refactoring-ui-skill
-/plugin install refactoring-ui
-```
+## Example requests
 
-Use **one** installed copy per project to avoid duplicate skill discovery. Commit the skill directory if teammates should share it. If you only want to reference this repository without copying the skill, adapt [`templates/AGENTS.md`](templates/AGENTS.md) to point to the checked-out path; merge it into any existing `AGENTS.md` rather than replacing project instructions.
+Once installed, ask for the work in ordinary language:
 
-The skill itself is plain Markdown plus Python 3.9+ scripts with no third-party dependencies. It does not require a particular editor, plugin manager, browser tool, or styling framework. Visual verification is best when a preview is available; otherwise, mark findings based only on source as unverified. Skill discovery and optional plugin support vary by host, so check its current documentation if it does not appear.
+> Review this settings page at mobile and desktop widths. Prioritize issues with hierarchy, spacing, and contrast, and cite the relevant rules.
 
-## What else it does
+> This project has no design tokens yet. Inspect the existing styles, then suggest a starter set that fits the current stack.
 
-**Build a design system**——*"This project has no design standards. Set some up."*
+> Improve this empty state while keeping the project's components and color conventions.
 
-A short Q&A first: what the product is, what personality you want, what stack you're on. You can also just give it a reference site's URL and it will read that site's font stack and primary color. It delivers the artifacts the project needs: token JSON, a Tailwind theme when applicable or framework-neutral CSS, a human-readable `DESIGN.md`, and an optional `preview.html`.
+A review should distinguish what can be verified from source from what requires seeing the page. Mention intentional design choices in your request so the agent treats them as project requirements.
 
-Colors are computed, not picked out of the air. The book gives a complete palette algorithm and not one specific color value, so the script implements that algorithm: bisect down from a base color, raise saturation as lightness moves away from 50%, rotate hue toward brighter or darker hues within a 20–30° cap. Every text-color pairing is contrast-checked before delivery.
+## Repository map
 
-**Build something new**——following the book's order instead of jumping straight to pixels.
+| Path | Purpose |
+| --- | --- |
+| [`.agents/skills/refactoring-ui/SKILL.md`](.agents/skills/refactoring-ui/SKILL.md) | Task routing and core workflows |
+| [`.agents/skills/refactoring-ui/references/`](.agents/skills/refactoring-ui/references/) | Topic-specific design guidance and review criteria |
+| [`.agents/skills/refactoring-ui/scripts/`](.agents/skills/refactoring-ui/scripts/) | Palette generation, contrast checks, and token output |
+| [`.agents/skills/refactoring-ui/assets/`](.agents/skills/refactoring-ui/assets/) | Reusable templates |
+| [`eval/`](eval/) | Evaluation cases and scoring tools |
 
-Feature before shell, grayscale before color, content ranked first. Values must come from an established scale; measure and rhythm get settled before color, depth and finishing. The empty state is designed alongside the feature, not bolted on afterward.
-
-**Ask why**——*"Why does grey text look so bad on our blue banner?"*
-
-It loads a single reference file and explains the mechanism: grey text works on white not because it's grey, but because contrast came down — the text moved toward the background color. On white, "going grey" and "reducing contrast" happen to be the same direction, which hides what's actually going on; on blue, the two part ways immediately. `§2.3`
-
-## A few things worth knowing upfront
-
-**Not using Tailwind is completely fine.** Tailwind runs through this whole document because the book's author later wrote it, making it the most economical notation available — not because anything depends on it. Hierarchy, measure, group spacing, contrast, elevation: none of them are Tailwind concepts.
-
-The Skill checks what you're actually using before adapting: `@theme` for v4, config for v3; if you're on shadcn/MUI/Ant, tokens go into their own theme configuration; if you already have tokens, it translates into the naming you have; if you have nothing, you get framework-neutral CSS variables. **It won't install Tailwind for you, won't migrate your styling approach, and won't replace a design system you already have.**
-
-**If you're also using another design-generation tool (a Design mode, `frontend-design`, that sort of thing), you need to ask for the walkthrough explicitly.** The reason: when you ask a design tool to do something and it succeeds, nothing anywhere raises a flag, so the walkthrough simply never happens — a generator doesn't come back and critique its own work. All it takes from you is one more sentence: *"now review that against the design rules."* Or, more economically, do it the other way around and hand it the design tokens **before** it starts.
-
-These two things look like they're at odds, but they aren't. The `frontend-design` family pursues distinctiveness; this pursues consistency. Two different axes. A design system tells you which blue and which spacing step — it never told you to build another boring dropdown. (The book says as much itself, at `§8.6`.)
-
-**Wherever something is deliberate, say so at the start.** A deliberately linear spacing scale, deliberately mixed radii, a brand color deliberately low in contrast — one sentence before you begin is enough. A project's own deliberate conventions outrank the book's rules, and the Skill will flag the conflict rather than score it as a defect. But if you don't say so, it has no way to know the choice was intentional, and a report whose first page is full of decisions you already made is one you'll stop reading after a couple of scrolls.
-
-## How it works
-
-Three layers, loaded progressively. `SKILL.md` (~220 lines) holds routing, 12 universal laws and 4 workflows, and stays in context; 14 reference files load on demand, one at a time; scripts and templates sit underneath.
-
-Every rule takes the same six-part shape——**Rule · Why · How · Values · Tailwind · Fails as**——so the model can reason along the mechanism rather than reciting conclusions. "Fails as" is the diagnostic entry point: start from what looks wrong, work back to the rule.
-
-Four commitments keep it from drifting:
-
-- **Existing systems always win.** It does two things only: map principles onto the naming you already have, or suggest something where it's missing. Never overwrite, never migrate, never install unasked.
-- **What it hands you are placeholders, not palettes.** Examples always say `bg-{primary}-600`, never `bg-indigo-600`: that syntax simply cannot be pasted into code, so colors have to be resolved from your own tokens. That one convention is why it won't quietly ship you a pile of indigo.
-- **Invariants are marked.** Bolded numbers are the book's rules and don't vary by project; everything else is one valid value, not the required answer.
-- **Extensions are labeled.** Dark mode, focus states, motion, z-index all came after this book. They're all included, but in a separate file where every entry states "the book doesn't cover this."
-
-<details>
-<summary><b>Project structure</b></summary>
-
-```
-.claude-plugin/          plugin + marketplace manifests
-skills/refactoring-ui/
-  SKILL.md               routing, 12 laws, 4 workflows
-  references/
-    00-coverage-matrix   all 151 rules tracked, the anti-omission device
-    01-08                one per chapter of the book
-    10-15                Tailwind mapping, tokens, component recipes,
-                         audit rubric, antipatterns, beyond the book
-  scripts/               generate_palette · check_contrast · emit_tokens
-  assets/                token template, hand-fillable theme skeleton
-  examples/              before → after cases, also eval fixtures
-```
-
-</details>
+The skill uses Markdown and Python 3.9+ scripts and has no third-party Python dependencies. Skill discovery varies by tool version; consult your host's current documentation if it does not appear.
 
 ## License
 
-Everything in this repository is [MIT](LICENSE). The book is a separate copyrighted work; this project only reimplements its principles independently and is not affiliated with its authors. Details in [ATTRIBUTION.md](ATTRIBUTION.md).
-
----
-
-*Made by a PM with weak design instincts. What he wanted was simple: every time an AI touches a stylesheet, the book's judgment is in the room.*
+This repository follows the [MIT License](LICENSE). See [Origin and credit](#origin-and-credit) and [ATTRIBUTION.md](ATTRIBUTION.md) for its relationship to the upstream project and the book.

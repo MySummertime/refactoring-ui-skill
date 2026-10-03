@@ -1,6 +1,6 @@
 {
   "skill_name": "refactoring-ui",
-  "notes": "Invocation eval only. Fresh session per prompt. Success = the agent reads skills/refactoring-ui/SKILL.md (or equivalent installed skill). Do not mix this score with audit must/forbidden.",
+  "notes": "Invocation eval only. Fresh session per prompt. Success = the agent reads .agents/skills/refactoring-ui/SKILL.md (or equivalent installed skill). Do not mix this score with audit must/forbidden.",
   "should_trigger": [
     "帮我看看这个设置页，总觉得哪里不对但说不上来。",
     "对这个页面做一次设计评审。",

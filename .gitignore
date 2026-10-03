@@ -20,7 +20,7 @@ venv/
 # Generated token output
 design/
 *.tokens.json
-!skills/refactoring-ui/assets/tokens.template.json
+!.agents/skills/refactoring-ui/assets/tokens.template.json
 
 # Eval run artifacts — keep the folder, not the reports
 eval/runs/**

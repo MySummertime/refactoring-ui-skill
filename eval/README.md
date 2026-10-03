@@ -47,11 +47,11 @@ eval/cases/<id>/expected.json  # must / should / forbidden
 
 不要用「平均感觉还行」代替这条线。
 
-## 跑法 A — 人工（Cursor / Claude Code）
+## 跑法 A — 人工
 
 **必须新开会话。** 写 Skill 的那条对话里带着作者上下文，会掩盖指令漏洞。
 
-1. 确认 Skill 已安装（Claude：`/plugin install refactoring-ui`；Cursor：按仓库 README 把 Skill 挂进会读到的规则里）。
+1. 按仓库 README 安装 Skill，并确认助手能发现它。
 2. 每个 case **单独开一条空对话**，只贴 `expected.json` 里的 `prompt` 字段（不要把 `expected.json` 本身贴给模型）。
 3. 要求它走 Workflow D：探测栈 → 能开页就开 → 七镜 → finding 表，每条挂 `§` 号。
 4. 把完整报告存成：
@@ -89,7 +89,7 @@ python3 eval/score.py --case 01-settings eval/runs/<run-id>/01-settings.md
 | 条件 | 做法 |
 |---|---|
 | Skill 开启 | 正常安装 |
-| Skill 关闭 | Claude Code：按官方文档关掉该 skill 的可见性；Cursor：本轮不要挂这条 skill / 不要指向 SKILL.md |
+| Skill 关闭 | 在对照会话中关闭或移除该 Skill，不指向其 SKILL.md |
 
 对比时看三件硬的，不要看文笔：
 
@@ -97,18 +97,18 @@ python3 eval/score.py --case 01-settings eval/runs/<run-id>/01-settings.md
 - must 命中是否更高  
 - 08 会不会把密度当缺陷  
 
-## 跑法 C — skill-creator（可选）
+## 跑法 C — 第三方评测工具（可选）
 
-Anthropic 的 `skill-creator` 默认读 **Skill 目录下的** `evals/evals.json`。本仓库黄金集在仓库根的 `eval/`，避免和 plugin 约定抢位置。
+若使用读取 **Skill 目录下** `evals/evals.json` 的评测工具，本仓库的黄金集位于仓库根的 `eval/`，可临时复制：
 
 若要用插件自动跑：
 
 ```bash
-mkdir -p skills/refactoring-ui/evals
-cp eval/evals.json skills/refactoring-ui/evals/evals.json
+mkdir -p .agents/skills/refactoring-ui/evals
+cp eval/evals.json .agents/skills/refactoring-ui/evals/evals.json
 ```
 
-然后在 Claude Code 里装 `skill-creator@claude-plugins-official`，按它的 eval 流程跑。`evals.json` 里的 `files` 是相对**仓库根**的路径；复制过去之后若插件以 skill 目录为根，需要把 `files` 改成 `../../../eval/cases/...` 或改成把 HTML 拷进 `evals/files/`。
+然后按所用评测工具的流程运行。`evals.json` 里的 `files` 是相对**仓库根**的路径；复制过去之后若插件以 skill 目录为根，需要把 `files` 改成 `../../../eval/cases/...` 或改成把 HTML 拷进 `evals/files/`。
 
 审计质量仍以 `score.py` + `expected.json` 为准。skill-creator 的 `expectations` 是自然语言断言，适合做冒烟，不替代 must/forbidden。
 

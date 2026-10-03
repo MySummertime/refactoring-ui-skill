@@ -1,6 +1,6 @@
 # Slim B — 父代理执行说明
 
-在 Cursor 里对新的 Skill 改动做审计回归。子代理用 **Grok 4.6 Medium**。不要用 Fast，也不要更高推理档。
+在支持独立会话的编码助手里，对 Skill 改动做审计回归。各 case 使用相同模型和推理设置，以便比较结果。
 
 ## 一键（报告已经在时）
 
@@ -14,7 +14,7 @@ open eval/runs/<run-id>/index.html   # macOS
 
 `eval/run.sh <run-id>` 是上面的包装。
 
-## 派发 8 路（要 Cursor 父代理来做）
+## 派发 8 路
 
 对每个 `eval/cases/<id>/` 起一个**新的**子代理，互不共享对话。Prompt = 本文件「硬约束」+ 该 case `expected.json` 的 `prompt` 字段。
 
@@ -22,8 +22,8 @@ open eval/runs/<run-id>/index.html   # macOS
 
 ```
 最多读 3 个文件：
-  skills/refactoring-ui/SKILL.md
-  skills/refactoring-ui/references/13-audit-rubric.md
+  .agents/skills/refactoring-ui/SKILL.md
+  .agents/skills/refactoring-ui/references/13-audit-rubric.md
   eval/cases/<id>/index.html
 禁止读 expected.json / CHECKLIST / eval README / PLAN / 其它章节。
 禁止开浏览器、起服务、截图。Verified: code-only。

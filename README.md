@@ -1,154 +1,65 @@
-# Refactoring UI：跨工具 Agent Skill
+# Refactoring UI Skill
 
-一本 AI 编码助手真正能执行的 Web 界面设计规则书，外加一层诊断。从 [《Refactoring UI》](https://www.refactoringui.com)（Adam Wathan & Steve Schoger 著）里拆出来。
+[English](README.en.md)
 
-> ⚠️ **非官方独立项目**，与原书作者无隶属关系，未经其审阅，也未获其背书。
+这是一个供编码助手使用的网页界面设计 Skill。它把常见的设计检查工作组织成可按需读取的规则、案例和脚本，帮助助手在编写界面、调整样式或评审页面时给出有依据的建议。
 
-> 它替代不了读原书，[感兴趣建议读原版](https://www.refactoringui.com)，写得真的好。
+## 项目来源
 
-> 详见 [ATTRIBUTION.md](ATTRIBUTION.md)。
+本仓库改编自 [Edison Li 的 refactoring-ui-skill](https://github.com/edisonmbli/refactoring-ui-skill)。原项目采用 MIT 许可证；本仓库保留其 [LICENSE](LICENSE) 中的版权声明，并在现有基础上调整了 Skill 的目录和跨工具使用说明。当前版本由 [MySummertime](https://github.com/MySummertime) 维护。
 
-**[English →](README.en.md)**
+设计原则来自 Adam Wathan 和 Steve Schoger 的 [《Refactoring UI》](https://www.refactoringui.com/)。本项目并非原书或原项目的官方版本，也未获得上述作者的认可。想系统学习这些原则，建议阅读原书；关于来源和使用边界，另见 [ATTRIBUTION.md](ATTRIBUTION.md)。
 
----
+## 适用场景
 
-## 目录
+- **构建界面：** 在动手写页面前梳理内容层级、布局、排版与组件状态。
+- **改进现有页面：** 根据项目已有的设计体系定位不协调的间距、颜色、对比度和视觉重点。
+- **设计评审：** 将发现的问题按严重程度排列，附上对应规则编号和可执行的修改建议。
+- **建立设计 Token：** 在缺少统一约定时生成基础色板与 Token，并检查文本对比度。
+- **解释设计决定：** 查询某条原则的原因、适用条件和常见误用。
 
-- [问题在哪](#问题在哪)
-- [这是什么](#这是什么)
-- [用起来是什么样](#用起来是什么样)
-- [安装](#安装)
-- [它还能干什么](#它还能干什么)
-- [几件需要前置说明的事](#几件需要前置说明的事)
-- [工作原理](#工作原理)
-- [许可证](#许可证)
-
-## 问题在哪
-
-AI 写得出合格的 HTML 和 CSS，做出来的界面却总是差点意思。虽然不是直接报错，但有时候会隐隐感觉“不对劲”。
-
-譬如，什么都居中。间距从头到尾一个值。主色总是偏好靛蓝或紫色。每个操作一律做成实心按钮。没有空状态。
-
-这些单拎出来看好像也没什么。但问题在于：**生成是局部的，设计要全局看。**
-
-中间缺的东西，可以用一本“规则书”来补。
-
-## 这是什么
-
-市面上的 AI 设计工具大多在做生成：你描述一个界面，它给你一个界面。
-
-这个 Skill 干的是反过来的活。它是约束层和诊断层，是规则书和评审员，不是造型师。
-
-所以它跟那些生成工具不是竞争关系，是可以充分互补的：**生成之前把约束交给它，生成之后让它把产物走查一遍。**
-
-Refactoring UI 是一本规则书，不是灵感书。几乎每一页都是 *症状 → 机制 → 具体做法 → 具体数值*，而且作者也写了 Tailwind CSS，所以从原则到代码这一段几乎没有损耗：书里的字号阶、间距阶、色阶，就是 Tailwind 的默认值。这个项目把整本书拆成了可执行规则，**151 条**，每一条都可追溯。
-
-## 用起来是什么样
-
-> *“帮我看看这个设置页，总觉得哪里不对但说不上来。”*
-
-它会先摸清你的技术栈，分别在桌面和移动端两种宽度下把页面渲染出来，然后按固定顺序换七个视角逐一扫查：**层级 → 间距 → 排版 → 色彩 → 深度 → 图像 → 收尾**。
-
-顺序是有因果的。层级没理顺，什么算间距问题就会跟着变；而间距一改，“这里到底要不要加条边框”这个问题往往自己就没了。
-
-它交回来的每一条 finding（问题项）都按严重度排好序，而且必须挂着规则号：
-
-
-| 严重度 | 规则  | 现状                                                   | 建议                                              |
-| ------ | ----- | ------------------------------------------------------ | ------------------------------------------------- |
-| P0     | §3.6 | 标签间距等于组间距，标签离自己的输入框和离下一组一样远 | 组内`mb-1`，组间 `mb-6`                           |
-| P1     | §2.8 | 三个按钮都是主操作样式                                 | 只留一个主操作，其余改描边和链接                  |
-| P1     | §6.2 | 静态卡片用了`shadow-lg`                                | 换`shadow-sm`。阴影表达的是 elevation，不是重要性 |
-
-后面还有一段“系统性问题”，主要抓整体，譬如“当前项目缺少间距阶”。
+Skill 会先检查项目的技术栈及现有 Token，再选择合适的建议。它支持普通 CSS、Tailwind 和常见组件库；不会自行替换项目已有的设计体系。能预览页面时，应结合实际渲染结果评审；仅能读取代码时，需要标明视觉结论尚未验证。
 
 ## 安装
 
-唯一的 Skill 源文件位于 [`skills/refactoring-ui/`](skills/refactoring-ui/)；把整个目录复制到所用编码助手支持的 Skill 目录即可，名称始终是 `refactoring-ui`。
+唯一的 Skill 目录是 [`.agents/skills/refactoring-ui/`](.agents/skills/refactoring-ui/)。在支持项目级 Agent Skills 的 Codex 或 VS Code 助手中打开本仓库，可以直接使用它。
 
-在使用 Codex 或 VS Code 中支持 Agent Skills 的助手的项目里：
+要在另一个项目中使用，请在**目标项目根目录**执行：
 
 ```bash
-git clone https://github.com/edisonmbli/refactoring-ui-skill.git
+skill_checkout=$(mktemp -d)
+git clone --depth 1 git@github.com:MySummertime/refactoring-ui-skill.git "$skill_checkout/repo"
 mkdir -p .agents/skills
-cp -R refactoring-ui-skill/skills/refactoring-ui .agents/skills/
+cp -R "$skill_checkout/repo/.agents/skills/refactoring-ui" .agents/skills/
+rm -rf "$skill_checkout"
 ```
 
-个人安装可放在 `~/.agents/skills/`。VS Code 也支持项目中的 `.github/skills/` 和 `.claude/skills/`。Claude Code 通常使用项目中的 `.claude/skills/`；原有插件安装方式仍可用：
+如果本仓库已经克隆到别处，把最后一行的源路径改为实际位置即可。个人使用可以复制到 `~/.agents/skills/`；其他支持 Agent Skills 的工具可使用其认可的 Skill 目录，例如 Claude Code 的项目级 `.claude/skills/`。每个作用域保留一份副本，以免重复发现。如果助手没有自动发现 Skill，可参考 [`templates/AGENTS.md`](templates/AGENTS.md) 添加明确的入口说明。
 
-```text
-/plugin marketplace add edisonmbli/refactoring-ui-skill
-/plugin install refactoring-ui
-```
+## 如何使用
 
-一个项目只安装一份，避免同名 Skill 被重复发现。需要团队共用时，可把 Skill 目录提交到项目。若只想引用本仓库、不复制 Skill，可修改 [`templates/AGENTS.md`](templates/AGENTS.md) 指向检出的实际路径；已有 `AGENTS.md` 时应合并内容。
+安装后，用正常语言提出任务即可。例如：
 
-Skill 本体是 Markdown 加 Python 3.9+ 脚本，不依赖第三方 Python 包，也不依赖特定编辑器、插件管理器或 CSS 框架。有预览能力时应检查实际页面；只能读源码时要把相应结论标为未做视觉验证。各宿主的发现机制和插件支持可能不同，未生效时请查对应工具的最新文档。
+> 检查这个设置页在手机和桌面宽度下的层级、间距和对比度，按严重程度列出问题，并指出对应规则。
 
-## 它还能干什么
+> 这个项目还没有设计 Token。请先检查现有样式，再提出一套能融入当前技术栈的基础方案。
 
-**搭一套设计系统**——*“这个项目没有设计规范，帮我定一套。”*
+> 改进这个空状态，同时保留项目当前的组件和颜色约定。
 
-先来一段简单问答：产品是什么、想要什么调性、什么技术栈，也可以直接给它一个参考站 URL，它能读出那个站的字体栈和主色。按项目需要交付 token JSON、适用时的 Tailwind 主题或框架无关 CSS、写给人看的 `DESIGN.md`，以及可选的 `preview.html`。
+评审结果应区分可从源码确认的问题和必须看实际页面才能确认的问题。若某种视觉选择是有意为之，可以在任务中说明，让助手把它当作项目约束。
 
-颜色是算出来的，不是拍脑袋定的。书里给了完整的色板算法，却一个具体色值都没给，所以脚本实现的就是那个算法：从基准色开始二分，明度偏离 50% 时提高饱和度，色相朝更亮或更暗的方向旋转，幅度控制在 20–30° 以内。每一组文字配色在交付前都过一遍对比度检查。
+## 仓库内容
 
-**从零做新东西**——按书里的顺序来，而不是上来就抠像素。
+| 路径 | 用途 |
+| --- | --- |
+| [`.agents/skills/refactoring-ui/SKILL.md`](.agents/skills/refactoring-ui/SKILL.md) | 任务路由和核心工作流程 |
+| [`.agents/skills/refactoring-ui/references/`](.agents/skills/refactoring-ui/references/) | 按主题读取的设计规则与评审依据 |
+| [`.agents/skills/refactoring-ui/scripts/`](.agents/skills/refactoring-ui/scripts/) | 色板生成、对比度检查和 Token 输出 |
+| [`.agents/skills/refactoring-ui/assets/`](.agents/skills/refactoring-ui/assets/) | 可复用的模板 |
+| [`eval/`](eval/) | 评测案例与评分工具 |
 
-先功能后外壳，先灰度后上色，内容先分好层级。取值必须来自既定的阶，行长和节奏先定下来，然后才轮到颜色、深度和收尾。空状态是跟功能一起设计的，不是事后补的。
+Skill 由 Markdown 和 Python 3.9+ 脚本组成，不要求安装第三方 Python 包。具体的 Skill 发现方式可能随工具版本变化，请以所用工具的当前文档为准。
 
-**问个为什么**——*“为什么灰字放在我们那个蓝色 banner 上就那么难看？”*
+## 许可
 
-它只加载一个引用文件，然后把机制讲给你听：灰字在白底上管用，不是因为它“灰”，而是因为对比度降下来了，文字在往背景色靠近。在白底上，“变灰”和“降对比”恰好是同一个方向，真正的机制就被盖住了；换到蓝底上，这两件事立刻分道扬镳。`§2.3`
-
-## 几件需要前置说明的事
-
-**不用 Tailwind 也完全没问题。** Tailwind 之所以贯穿全文，是因为这本书的作者后来写了它，那是最省事的一种表达法，不是因为哪里离不开它。层级、行长、分组间距、对比度、elevation，没有一样是 Tailwind 的概念。
-
-Skill 会先看你实际用的是什么再适配：v4 给 `@theme`，v3 给 config；用了 shadcn/MUI/Ant，就把 token 注进它们自己的主题配置；已经有自己的 token，就翻译成你现有的那套命名；什么都没有，就给一份框架无关的 CSS 变量。**它不会给你装 Tailwind、不迁移你的样式方案、不替换你已有的设计系统。**
-
-**如果你还在用别的设计生成工具（Design 模式、`frontend-design` 之类），需要单独说明要走查。** 这背后的原因是：当你让设计工具做点什么，它也顺利做出来了，这时候没有任何地方会报警，走查根本不会发生，因为生成器不会回头挑自己的毛病。这时候你只需要补一句：*“现在按设计规则审一遍。”* 或者更省事的是反过来做：在它动手**之前**就先把 Design Token 给它。
-
-这两件事看着像在打架，其实并不。`frontend-design` 那一类追求的是有个性，这个追求的是成体系，两条不同的轴。设计系统告诉你用哪个蓝、哪一档间距，它可从来没让你再做一个无聊的下拉菜单。（这话是书里自己说的，`§8.6`。）
-
-**哪个环节是故意而为之的，建议一开始就说明。** 譬如，间距阶故意做成线性的、圆角故意混用、品牌色故意压低对比等等，在启动前提一句就行。项目本身的刻意约定会压过书里的规则，Skill 会把冲突标出来，而不是判成缺陷。但如果你不说，它就无从知道那是有意为之，而一份报告，头一页全是你早就拍过板的决定，估计你翻两下就不会再看了。
-
-## 工作原理
-
-三层结构，渐进式加载。`SKILL.md`（约 220 行）放路由、12 条通用铁律和 4 个工作流，常驻上下文；14 个引用文件按需加载，一次只装一个；脚本和模板垫在最底下。
-
-每条规则都是同样的六段式——**规则 · 为什么 · 怎么做 · 数值 · Tailwind 写法 · 失败长什么样**——让模型能顺着机制推理，而不是背结论。“失败长什么样”是诊断入口：从看着不对的地方出发，反查到规则。
-
-四条底线撑着它不跑偏：
-
-- **已有系统永远优先。** 它只做两件事：把原则映射到你已有的命名上，或者在缺失的地方提个建议。绝不覆盖、绝不迁移、绝不擅自安装。
-- **给的是占位符，不是色板。** 示例一律写 `bg-{primary}-600`，绝不写 `bg-indigo-600`：这种写法在语法上根本粘不进代码，颜色只能从你自己的 token 里解析。就这一条约定，它就不会闷声给你塞一堆靛蓝。
-- **不变量有标记。** 加粗的数字是书里的规则，不随项目变；其余的只是一个合法取值，不是标准答案。
-- **扩展有标注。** 暗色模式、focus 状态、动效、z-index 都是这本书之后才有的东西，这些都收了，但单独放一个文件，里面每一条都写明“书里没有这条”。
-
-<details>
-<summary><b>项目结构</b></summary>
-
-```
-.claude-plugin/          插件与 marketplace 清单
-skills/refactoring-ui/
-  SKILL.md               路由、12 条铁律、4 个工作流
-  references/
-    00-coverage-matrix   151 条规则逐条追踪，防遗漏的兜底机制
-    01-08                对应原书八章，一章一个
-    10-15                Tailwind 映射、token、组件配方、走查判据、
-                         反模式、书外扩展
-  scripts/               generate_palette · check_contrast · emit_tokens
-  assets/                token 模板、可手填的主题骨架
-  examples/              before → after 实例，兼作 eval 样本
-```
-
-</details>
-
-## 许可证
-
-仓库内所有内容采用 [MIT](LICENSE)。原书受版权保护，是独立作品，本项目只是独立地重新实现了书里的原则，与原书作者无隶属关系，细节见 [ATTRIBUTION.md](ATTRIBUTION.md)。
-
----
-
-*一个设计功底不足的产品经理做的。他想要的很简单：每次 AI 动样式表，这本书的判断力都在场。*
+本仓库遵循 [MIT 许可证](LICENSE)。改编来源、原书与本仓库之间的关系见 [项目来源](#项目来源) 和 [ATTRIBUTION.md](ATTRIBUTION.md)。
