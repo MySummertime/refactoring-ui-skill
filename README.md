@@ -1,4 +1,4 @@
-# Refactoring UI：一个 Claude Skill
+# Refactoring UI：跨工具 Agent Skill
 
 一本 AI 编码助手真正能执行的 Web 界面设计规则书，外加一层诊断。从 [《Refactoring UI》](https://www.refactoringui.com)（Adam Wathan & Steve Schoger 著）里拆出来。
 
@@ -64,68 +64,32 @@ Refactoring UI 是一本规则书，不是灵感书。几乎每一页都是 *症
 
 ## 安装
 
+唯一的 Skill 源文件位于 [`skills/refactoring-ui/`](skills/refactoring-ui/)；把整个目录复制到所用编码助手支持的 Skill 目录即可，名称始终是 `refactoring-ui`。
+
+在使用 Codex 或 VS Code 中支持 Agent Skills 的助手的项目里：
+
+```bash
+git clone https://github.com/edisonmbli/refactoring-ui-skill.git
+mkdir -p .agents/skills
+cp -R refactoring-ui-skill/skills/refactoring-ui .agents/skills/
 ```
+
+个人安装可放在 `~/.agents/skills/`。VS Code 也支持项目中的 `.github/skills/` 和 `.claude/skills/`。Claude Code 通常使用项目中的 `.claude/skills/`；原有插件安装方式仍可用：
+
+```text
 /plugin marketplace add edisonmbli/refactoring-ui-skill
 /plugin install refactoring-ui
 ```
 
-就这样，没有中心化的包仓库，也不往任何地方上传东西。`marketplace add` 做的事，是把仓库 clone 下来、读一下 `.claude-plugin/marketplace.json`；`install` 再从约定目录里把内容加载进来。所谓更新，其实就是换了个名字的 `git pull`：`/plugin marketplace update refactoring-ui`。
+一个项目只安装一份，避免同名 Skill 被重复发现。需要团队共用时，可把 Skill 目录提交到项目。若只想引用本仓库、不复制 Skill，可修改 [`templates/AGENTS.md`](templates/AGENTS.md) 指向检出的实际路径；已有 `AGENTS.md` 时应合并内容。
 
-脚本要 **Python 3.9+**，零第三方依赖。没有 Python 也照样能用，色板算法有一份可以手工执行的说明。
-
-<details>
-<summary><b>其他安装方式：普通 Skill，以及非 Claude Code 的工具</b></summary>
-
-### Claude Code，作为普通 Skill
-
-```bash
-git clone https://github.com/edisonmbli/refactoring-ui-skill.git
-
-cp -r refactoring-ui-skill/skills/refactoring-ui ~/.claude/skills/   # 个人级
-cp -r refactoring-ui-skill/skills/refactoring-ui .claude/skills/     # 项目级
-```
-
-### 其他编码助手
-
-插件机制是 Claude Code 专属的，但 Skill 本身不是。它就是一堆 Markdown，而且刻意做成了“一个索引 + 按需加载的引用文件”，任何能读文件的助手都能照着走，告诉它一次就行。
-
-先把 Skill 放到一个固定位置：
-
-```bash
-git clone https://github.com/edisonmbli/refactoring-ui-skill.git .refactoring-ui
-```
-
-然后直接拷贝现成的指路文件，别手抄——description 触发这种指令，模型一忙就是最先被跳过的那种：
-
-```bash
-# Codex、Copilot、Windsurf、Cline/Roo、Aider，或者作为 Cursor 的 AGENTS.md 兜底
-cp .refactoring-ui/templates/AGENTS.md AGENTS.md          # 或合并进你已有的那份
-
-# Cursor 专用——靠文件类型匹配挂载，不靠 Cursor 从 description 猜意图
-mkdir -p .cursor/rules && cp .refactoring-ui/templates/cursor/refactoring-ui.mdc .cursor/rules/
-```
-
-| 工具               | 放哪                                                                            |
-| ------------------ | ------------------------------------------------------------------------------- |
-| **OpenAI Codex**   | 仓库根目录的`AGENTS.md`                                                         |
-| **Cursor**         | `.cursor/rules/refactoring-ui.mdc`（glob 匹配，见上），或 `AGENTS.md`           |
-| **GitHub Copilot** | `.github/copilot-instructions.md`                                               |
-| **Windsurf**       | `.windsurf/rules/design.md`                                                     |
-| **Cline / Roo**    | `.clinerules/design.md`                                                         |
-| **Aider**          | `CONVENTIONS.md`，启动时用 `--read` 带上                                        |
-| **其他**           | 会话开始时它会读的任何文件；实在不行，把 `templates/AGENTS.md` 的内容贴进对话也管用 |
-
-`AGENTS.md` 正在变成跨工具的通用约定，能用就优先用它；这些路径变动挺频繁，哪个不生效就去翻一下该工具的最新文档。
-
-离开 Claude Code 会损失什么：脚本需要 Python 和执行命令的权限，但有手工降级方案；视觉验证需要浏览器工具，没有的话结论只能来自源码，Skill 会自动标成 `code-only`；并行走查需要 subagent，而串行本来就是默认模式。这些都不是承重结构，规则、诊断、走查纪律，在任何能读文件的助手里都成立。
-
-</details>
+Skill 本体是 Markdown 加 Python 3.9+ 脚本，不依赖第三方 Python 包，也不依赖特定编辑器、插件管理器或 CSS 框架。有预览能力时应检查实际页面；只能读源码时要把相应结论标为未做视觉验证。各宿主的发现机制和插件支持可能不同，未生效时请查对应工具的最新文档。
 
 ## 它还能干什么
 
 **搭一套设计系统**——*“这个项目没有设计规范，帮我定一套。”*
 
-先来一段简单问答：产品是什么、想要什么调性、什么技术栈，也可以直接给它一个参考站 URL，它能读出那个站的字体栈和主色。问完交付五样东西：token JSON、对应你实际版本的 Tailwind 主题、框架无关的 CSS、一份写给人看的 `DESIGN.md` 说明书，以及可以直接发给同事看的 `preview.html`。
+先来一段简单问答：产品是什么、想要什么调性、什么技术栈，也可以直接给它一个参考站 URL，它能读出那个站的字体栈和主色。按项目需要交付 token JSON、适用时的 Tailwind 主题或框架无关 CSS、写给人看的 `DESIGN.md`，以及可选的 `preview.html`。
 
 颜色是算出来的，不是拍脑袋定的。书里给了完整的色板算法，却一个具体色值都没给，所以脚本实现的就是那个算法：从基准色开始二分，明度偏离 50% 时提高饱和度，色相朝更亮或更暗的方向旋转，幅度控制在 20–30° 以内。每一组文字配色在交付前都过一遍对比度检查。
 

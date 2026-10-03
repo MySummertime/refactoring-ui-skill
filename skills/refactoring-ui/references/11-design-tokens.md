@@ -112,19 +112,15 @@ Declare in `pairs` every **text-on-background** combination the UI actually prod
 
 ## Step 4 — Emit
 
-```bash
-python3 scripts/emit_tokens.py design-tokens.json --format all --out ./design
-```
-
-**Five deliverables. Not four, not six.**
+Use `scripts/emit_tokens.py` for the formats the project needs. Its `--format all` option generates every supported code format; select a narrower format when the project does not use Tailwind. Keep generated files within the user's requested scope.
 
 | # | File | Purpose |
 |---|---|---|
 | 1 | `design-tokens.json` | Source of truth. Two layers, primitive + semantic |
-| 2 | `theme.css` (v4) or `tailwind.config.js` (v3) | Emitted for the **detected** version — never both |
+| 2 | `theme.css` (v4) or `tailwind.config.js` (v3) | Emit for the detected version only when the project uses Tailwind or the user requests it |
 | 3 | `tokens.css` | Framework-neutral custom properties, for projects not on Tailwind and for CSS outside it |
 | 4 | `DESIGN.md` | **Human-readable system manual** — written by you, not the script |
-| 5 | `preview.html` | Swatches, type scale, spacing, elevation, radius. Publishable as an Artifact for the team |
+| 5 | `preview.html` | Optional visual check for swatches, type scale, spacing, elevation, and radius |
 
 ### The two layers
 

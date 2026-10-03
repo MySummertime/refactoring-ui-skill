@@ -1,3 +1,3 @@
 ## Design tasks
 
-Whenever a task touches building, changing, or reviewing any user interface, **first** read `.refactoring-ui/skills/refactoring-ui/SKILL.md` and follow its routing table. It tells you which file under `references/` to load next -- load on demand, one at a time. Do not read the whole `references/` directory up front; progressive, on-demand loading is the design, not an optimization.
+For a web interface build, refinement, design review, or design-token task, use the `refactoring-ui` skill. Its `SKILL.md` is normally at `.agents/skills/refactoring-ui/SKILL.md`. If the project stores the skill elsewhere, update this path to the actual checkout. Follow its routing table and load only relevant references. Preserve existing project design conventions and the user's requested scope.

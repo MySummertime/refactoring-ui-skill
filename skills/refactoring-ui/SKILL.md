@@ -1,6 +1,6 @@
 ---
 name: refactoring-ui
-description: Design rulebook and diagnostic layer for web UI, distilled from Refactoring UI by Adam Wathan and Steve Schoger. Use when building a new page or component, refining UI that looks off or amateurish, running a design review, or establishing design tokens (color shades, type scale, spacing scale, elevation, radius). Covers visual hierarchy, layout and spacing, typography, color and contrast, depth and shadows, images, and finishing touches, with Tailwind mappings throughout. Also triggers on non-English requests for the same things - for example Chinese: 页面/界面设计, 样式调整, UI 太丑, 设计评审, 视觉层级, 配色, 对比度, 间距, 排版, 阴影, 空状态, 设计规范, 设计系统. Not for backend logic, copy editing, or changes with no visual surface.
+description: Apply Refactoring UI principles when building, refining, or reviewing a web interface or its design tokens. Diagnose visual hierarchy, spacing, typography, color, depth, images, and finishing details. Works with existing CSS, utility frameworks, and component libraries. Use for UI and design-system requests, including 页面设计、样式调整、设计评审、视觉层级、配色、间距和排版; skip backend-only and nonvisual work.
 ---
 
 # Refactoring UI
@@ -15,7 +15,7 @@ The rules come from a book whose authors went on to build Tailwind CSS. Its scal
 
 ## Step 0 — Detect before you decide
 
-**Never make a design judgment before running this.** It takes one pass and prevents the two worst failure modes: fighting an existing design system, and emitting code the project can't use.
+Before proposing changes, inspect the relevant project files so the advice fits its actual design system and stack.
 
 Detect and state briefly:
 
@@ -31,7 +31,7 @@ Detect and state briefly:
 
 The reference files mix two kinds of content, and confusing them is the main way this skill can do damage. The notation keeps them apart.
 
-**Invariants — the book's actual rules.** In every `Values` block, **bold numbers are invariants**: font weights 400/500 and 600/700, a maximum of three text colors, one primary action per page, 45–75 characters per line, 4.5:1 and 3:1 contrast, no two scale steps closer than 25%, hue rotation capped at 20–30°, five elevation levels. These do not vary by project. Apply them as written.
+**Book guidance.** Bold values in `Values` identify the book's concrete recommendations. Treat them as strong defaults, then account for project conventions, content, accessibility requirements, and current standards. They are not universal constraints.
 
 **Illustrative choices — everything else.** Unbolded values in `Values`, and every size, spacing and color in a code example, are one valid instance of the rule, not the required answer.
 
@@ -90,7 +90,7 @@ Establishing a design system where none exists, or filling gaps in a partial one
 1. **Interview.** Load `11-design-tokens.md` and run its question script — at most four rounds, batched, every question skippable. If the user says "just pick for me," take the documented defaults and go straight to step 2.
 2. **Generate.** Run `scripts/generate_palette.py` for each color ramp. The book's algorithm is base(500) → edges(900/100) → midpoints(700/300) → fill(800/600/400/200), with saturation raised as lightness moves away from 50% and hue rotated no more than 20–30° toward 60/180/300 to lighten or 0/120/240 to darken. If Python is unavailable, follow the manual procedure in `11-design-tokens.md` — same algorithm, done by hand.
 3. **Verify.** Run `scripts/check_contrast.py` over every foreground/background pairing the system implies. 4.5:1 for normal text, 3:1 for large.
-4. **Emit** the five deliverables defined in `11-design-tokens.md`: `design-tokens.json`, the Tailwind theme block for the detected version, `tokens.css`, a human-readable `DESIGN.md`, and `preview.html`.
+4. **Emit** the artifacts the user needs. Use `11-design-tokens.md` for the available formats; produce a Tailwind theme only when the project uses Tailwind or the user requests one.
 
 Do not invent hex values by hand. The palette algorithm exists precisely because eyeballed shades drift.
 
@@ -109,7 +109,7 @@ The order is the method. Following it out of order is how interfaces end up over
 
 Consult `12-component-recipes.md` for buttons, cards, form groups, tables, dropdowns, modals, alerts and empty states rather than re-deriving them.
 
-**Steps 1–3 must leave a trace, not just happen in your head.** A single generation pass tends to compress "grayscale first, then rank, then color" into "write the colored markup directly" — the order gets lost because nothing forces it to surface. Before the first line of markup, write a short constraint brief as a leading comment in the file you're about to produce: the content ranking from step 3 (primary / secondary / tertiary, one primary action), and the token values steps 4–6 will draw from. It's the process made checkable, not a formality — a reviewer (human or a later Workflow D pass) can see the ranking was actually decided instead of trusting that it was.
+For larger builds, keep a short constraint brief in working notes or the final explanation: content priority, primary action, and the tokens used. Do not add process notes to product source files unless they help maintainers.
 
 ## Workflow C · Refine
 
@@ -141,7 +141,7 @@ Report P0s even when the user asked about something else.
 |---|---|---|
 | **Focused** | user names a direction ("look at the colors") | Load 1–2 lens refs, single pass |
 | **Sweep** *(default for "review this")* | broad request, one screen or component | Run the self-contained checklist in `13-audit-rubric.md`, lens by lens, in order — no chapter file needed. Load one only to explain a rule or settle a disputed finding |
-| **Parallel** | large surface, many files, **and the user agrees** | One subagent per lens, each returning the finding schema; then merge |
+| **Parallel** | large surface and parallel agents are available and authorized | Divide independent lenses, then merge findings |
 
 **Sweep order is fixed and not negotiable:**
 
@@ -153,14 +153,14 @@ This is the book's own ordering and it is causal: hierarchy problems change what
 
 **Merging parallel results:** deduplicate on `(file, line, rule)`. When two lenses propose conflicting changes to the same element, the earlier lens in the sweep order wins. Never present the raw concatenation of subagent output — merge, deduplicate, re-rank by severity, and cut anything that survived only as a restatement.
 
-**Parallel is opt-in.** A cold subagent has to rebuild context that this session already holds, so it only pays off across a genuinely large surface. Ask before spawning.
+Use a sequential sweep by default. Parallel work depends on the host's available capabilities and instructions.
 
 ## Visual verification
 
 Reading source code is not a design review. Whenever the project can be rendered:
 
-1. Start the preview server and open the page.
-2. Screenshot at desktop (1280) **and** mobile (375).
+1. Use the available preview, browser, or screenshot capability to inspect the rendered page when practical.
+2. Check a representative desktop and mobile width for responsive interfaces.
 3. Judge from the pixels — actual measure, actual contrast, actual group spacing, whether breakpoints collapse.
 
 Static analysis cannot see a line that runs to 110 characters, a heading whose weight vanishes against its background, or a card grid that stacks wrong at 400px. Findings that came only from reading code should be marked as unverified.
@@ -177,7 +177,7 @@ When no such capability exists, Workflow B stands alone.
 ## Scope guard
 
 - Change only what the user asked about. Report other findings; don't act on them.
-- Never install a dependency, never migrate a styling approach, never introduce Tailwind into a project that doesn't use it. Recommend, and let the user decide.
+- Keep the project's styling approach and dependencies unless the user asks for a change that requires updating them.
 - Never replace an existing design system with the book's defaults. Map onto it instead.
 - Don't manufacture a diff to demonstrate that a rule was applied. If the current implementation already satisfies the rule, say so and move on.
 - When a rule and a deliberate project convention conflict, surface the conflict; the convention wins until the user says otherwise.

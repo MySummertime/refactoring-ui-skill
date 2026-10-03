@@ -1,4 +1,4 @@
-# Refactoring UI: a Claude Skill
+# Refactoring UI: a portable Agent Skill
 
 A Web-UI design rulebook an AI coding agent can actually execute, plus a diagnostic layer on top. Extracted from [*Refactoring UI*](https://www.refactoringui.com) by Adam Wathan & Steve Schoger.
 
@@ -63,69 +63,32 @@ There's also a **Systemic** section that looks at the whole rather than the part
 
 ## Install
 
+The canonical skill is [`skills/refactoring-ui/`](skills/refactoring-ui/). Copy that entire directory into a skill location supported by your coding assistant. The skill name stays `refactoring-ui` in every environment.
+
+For a repository using Codex or an agent in VS Code that discovers Agent Skills:
+
+```bash
+git clone https://github.com/edisonmbli/refactoring-ui-skill.git
+mkdir -p .agents/skills
+cp -R refactoring-ui-skill/skills/refactoring-ui .agents/skills/
 ```
+
+For a personal installation, copy it to `~/.agents/skills/` instead. VS Code also supports `.github/skills/` and `.claude/skills/` in a project. For Claude Code, `.claude/skills/` is the conventional project location; its plugin marketplace installation remains available:
+
+```text
 /plugin marketplace add edisonmbli/refactoring-ui-skill
 /plugin install refactoring-ui
 ```
 
-That's it. No central package registry, and nothing gets uploaded anywhere. What `marketplace add` does is clone the repo and read `.claude-plugin/marketplace.json`; `install` then loads the contents from the conventional directories. Updating is `git pull` wearing a different name: `/plugin marketplace update refactoring-ui`.
+Use **one** installed copy per project to avoid duplicate skill discovery. Commit the skill directory if teammates should share it. If you only want to reference this repository without copying the skill, adapt [`templates/AGENTS.md`](templates/AGENTS.md) to point to the checked-out path; merge it into any existing `AGENTS.md` rather than replacing project instructions.
 
-The scripts want **Python 3.9+** and have zero third-party dependencies. Without Python it still works — the palette algorithm comes with a hand-executable procedure.
-
-<details>
-<summary><b>Other ways to install: as a plain skill, and for non-Claude-Code tools</b></summary>
-
-### Claude Code, as a plain skill
-
-```bash
-git clone https://github.com/edisonmbli/refactoring-ui-skill.git
-
-cp -r refactoring-ui-skill/skills/refactoring-ui ~/.claude/skills/   # personal
-cp -r refactoring-ui-skill/skills/refactoring-ui .claude/skills/     # project
-```
-
-### Other coding agents
-
-The plugin mechanism belongs to Claude Code, but the Skill itself doesn't. It's a pile of Markdown, deliberately built as "an index plus references loaded on demand" — any agent that can read files can follow it. You just have to tell it once.
-
-First put the Skill somewhere stable:
-
-```bash
-git clone https://github.com/edisonmbli/refactoring-ui-skill.git .refactoring-ui
-```
-
-Then copy a ready-made pointer file instead of hand-typing one — a description-only trigger is exactly the kind of instruction agents skip under load:
-
-```bash
-# Codex, Copilot, Windsurf, Cline/Roo, Aider, or as an AGENTS.md fallback for Cursor
-cp .refactoring-ui/templates/AGENTS.md AGENTS.md          # or merge into your existing one
-
-# Cursor specifically — glob-matched, so it attaches on the file type, not on Cursor
-# guessing intent from a description
-mkdir -p .cursor/rules && cp .refactoring-ui/templates/cursor/refactoring-ui.mdc .cursor/rules/
-```
-
-| Agent | Where it goes |
-| ----- | ------------- |
-| **OpenAI Codex** | `AGENTS.md` at the repo root |
-| **Cursor** | `.cursor/rules/refactoring-ui.mdc` (glob-matched — see above), or `AGENTS.md` |
-| **GitHub Copilot** | `.github/copilot-instructions.md` |
-| **Windsurf** | `.windsurf/rules/design.md` |
-| **Cline / Roo** | `.clinerules/design.md` |
-| **Aider** | `CONVENTIONS.md`, passed with `--read` at startup |
-| **Anything else** | Whatever it reads at session start; failing that, pasting `templates/AGENTS.md`'s content into the chat also works |
-
-`AGENTS.md` is becoming the cross-tool convention, so prefer it where available. These paths change often — if one doesn't take effect, check the tool's current docs.
-
-What you lose outside Claude Code: the scripts need Python and permission to run commands, though there's a manual fallback; visual verification needs browser tooling, without which conclusions come from source alone and the Skill marks them `code-only`; parallel walkthroughs need subagents, while sequential is the default anyway. None of this is load-bearing — the rules, the diagnosis and the walkthrough discipline hold up in any agent that can read files.
-
-</details>
+The skill itself is plain Markdown plus Python 3.9+ scripts with no third-party dependencies. It does not require a particular editor, plugin manager, browser tool, or styling framework. Visual verification is best when a preview is available; otherwise, mark findings based only on source as unverified. Skill discovery and optional plugin support vary by host, so check its current documentation if it does not appear.
 
 ## What else it does
 
 **Build a design system**——*"This project has no design standards. Set some up."*
 
-A short Q&A first: what the product is, what personality you want, what stack you're on. You can also just give it a reference site's URL and it will read that site's font stack and primary color. Then it delivers five things: a token JSON, a Tailwind theme matching your actual version, framework-neutral CSS, a human-readable `DESIGN.md`, and a `preview.html` you can send straight to a colleague.
+A short Q&A first: what the product is, what personality you want, what stack you're on. You can also just give it a reference site's URL and it will read that site's font stack and primary color. It delivers the artifacts the project needs: token JSON, a Tailwind theme when applicable or framework-neutral CSS, a human-readable `DESIGN.md`, and an optional `preview.html`.
 
 Colors are computed, not picked out of the air. The book gives a complete palette algorithm and not one specific color value, so the script implements that algorithm: bisect down from a base color, raise saturation as lightness moves away from 50%, rotate hue toward brighter or darker hues within a 20–30° cap. Every text-color pairing is contrast-checked before delivery.
 
